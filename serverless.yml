@@ -1,0 +1,35 @@
+service: sls-sample
+frameworkVersion: '3'
+custom:
+  defaultStage: dev
+  pythonRequirements:
+    dockerizePip: true
+    layer: true
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: ap-northeast-1
+  stage: ${opt:stage, self:custom.defaultStage}
+  environment:
+    APP_NAME: sls-sample
+
+package:
+  patterns:
+    - '!**'
+    - 'app/**'
+
+functions:
+  api:
+    handler: app.main.handler
+    events:
+      - http:
+          path: /{path+}
+          method: ANY
+          private: false
+          cors: true
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+
+plugins:
+  - serverless-python-requirements
